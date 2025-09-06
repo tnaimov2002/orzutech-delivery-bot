@@ -6,11 +6,10 @@ from aiogram.filters import Command, CommandStart
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.client.default import DefaultBotProperties
 import logging
-from datetime import datetime
 import pytz
-
-# O‘zbekiston vaqti
 uzb_tz = pytz.timezone("Asia/Tashkent")
+
+from datetime import datetime
 
 
 # Excel eksport uchun
@@ -294,4 +293,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
