@@ -5,6 +5,11 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.client.default import DefaultBotProperties
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+uzb_tz = ZoneInfo("Asia/Tashkent")
+
 import logging
 import pytz
 uzb_tz = pytz.timezone("Asia/Tashkent")
@@ -293,5 +298,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
