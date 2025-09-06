@@ -7,6 +7,11 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.client.default import DefaultBotProperties
 import logging
 from datetime import datetime
+import pytz
+
+# O‘zbekiston vaqti
+uzb_tz = pytz.timezone("Asia/Tashkent")
+
 
 # Excel eksport uchun
 try:
@@ -158,8 +163,8 @@ async def accept_order(callback: CallbackQuery):
     # faqat bitta admin
     admin_id, order_text = pending_order
     active_orders[courier_id] = order_text
-    start_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    order_history.append((courier_name, order_text, start_time, None))
+    start_time = datetime.now(uzb_tz).strftime("%Y-%m-%d %H:%M:%S")
+    order_history[i] = (name, order, start, datetime.now(uzb_tz).strftime("%Y-%m-%d %H:%M:%S"))
 
     # ✅ faqat buyurtmani bergan admin'ga yuboriladi
     try:
@@ -289,3 +294,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
