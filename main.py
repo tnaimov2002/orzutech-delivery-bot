@@ -70,9 +70,9 @@ COURIERS = {
 }
 
 # Global
-active_orders = {}   # {courier_id: order_text}
-order_history = []   # [(courier_name, order_text, start_time, end_time)]
-pending_order = None # (admin_id, order_text)
+active_orders = {}     # {courier_id: [order_text1, order_text2, ...]}
+order_history = []     # [(courier_name, order_text, start_time, end_time)]
+pending_orders = []    # [(admin_id, order_text)]
 
 dp = Dispatcher()
 router = Router()
@@ -99,7 +99,7 @@ async def start_handler(msg: Message):
 # 📦 Buyurtma yoki kuryer login
 @router.message(F.text & ~F.text.startswith("/"))
 async def courier_auth(msg: Message):
-    global pending_order
+    global pending_orders
 
     if msg.from_user.id in ADMINS:  # Admin buyurtma yaratadi
         order_text = msg.text.strip()
@@ -107,7 +107,7 @@ async def courier_auth(msg: Message):
             await msg.answer("❗ Buyurtma matni bo'sh bo'lmasligi kerak.")
             return
 
-        pending_order = (msg.from_user.id, order_text)
+        pending_orders.append((msg.from_user.id, order_text))
         await msg.answer("✅ Buyurtma yaratildi!")
 
         kb = InlineKeyboardBuilder()
@@ -118,15 +118,14 @@ async def courier_auth(msg: Message):
         admin_name = ADMIN_NAMES.get(msg.from_user.id, "Noma'lum admin")
 
         for courier_name, courier_id in COURIERS.items():
-            if courier_id not in active_orders:
-                try:
-                    await msg.bot.send_message(
-                        courier_id,
-                        f"📦 Yangi buyurtma paydo bo‘ldi!\n👤 Admin: {admin_name}\n\n{order_text}",
-                        reply_markup=kb.as_markup()
-                    )
-                except Exception as e:
-                    logging.warning(f"Kuryerga yuborishda xatolik ({courier_name}): {e}")
+            try:
+                await msg.bot.send_message(
+                    courier_id,
+                    f"📦 Yangi buyurtma paydo bo‘ldi!\n👤 Admin: {admin_name}\n\n{order_text}",
+                    reply_markup=kb.as_markup()
+                )
+            except Exception as e:
+                logging.warning(f"Kuryerga yuborishda xatolik ({courier_name}): {e}")
         return
 
     # Kuryer login
@@ -141,7 +140,7 @@ async def courier_auth(msg: Message):
 # ✅ Qabul qilish
 @router.callback_query(F.data == "accept")
 async def accept_order(callback: CallbackQuery):
-    global active_orders, pending_order, order_history
+    global active_orders, pending_orders, order_history
 
     courier_id = callback.from_user.id
     courier_name = get_courier_name_by_id(courier_id)
@@ -150,16 +149,13 @@ async def accept_order(callback: CallbackQuery):
         await callback.answer("❌ Siz kuryerlar ro'yxatida emassiz.", show_alert=True)
         return
 
-    if courier_id in active_orders:
-        await callback.answer("❌ Sizda faol buyurtma bor.", show_alert=True)
-        return
-
-    if not pending_order:
+    if not pending_orders:
         await callback.answer("❌ Hozir ochiq buyurtma yo'q.", show_alert=True)
         return
 
-    admin_id, order_text = pending_order
-    active_orders[courier_id] = order_text
+    # Eng birinchi buyurtmani olish
+    admin_id, order_text = pending_orders.pop(0)
+    active_orders.setdefault(courier_id, []).append(order_text)
     start_time = datetime.now(uzb_tz).strftime("%Y-%m-%d %H:%M:%S")
 
     # ✅ order_history ga qo‘shish
@@ -180,7 +176,6 @@ async def accept_order(callback: CallbackQuery):
     kb.button(text="🏁 Buyurtmani yakunlash", callback_data="finish")
     await callback.message.answer("Siz buyurtmani qabul qildingiz, oq yo‘l!", reply_markup=kb.as_markup())
     await callback.answer()
-    pending_order = None
 
 # ❌ Rad etish
 @router.callback_query(F.data == "reject")
@@ -198,11 +193,12 @@ async def finish_order(callback: CallbackQuery):
         await callback.answer("❌ Siz kuryer emassiz.", show_alert=True)
         return
 
-    if courier_id not in active_orders:
+    if courier_id not in active_orders or not active_orders[courier_id]:
         await callback.answer("❌ Faol buyurtma yo‘q.", show_alert=True)
         return
 
-    order_text = active_orders[courier_id]
+    # Ro‘yxatdan birinchi buyurtmani olish
+    order_text = active_orders[courier_id].pop(0)
 
     for i, (name, order, start, end) in enumerate(order_history):
         if name == courier_name and order == order_text and end is None:
@@ -214,7 +210,6 @@ async def finish_order(callback: CallbackQuery):
             )
             break
 
-    del active_orders[courier_id]
     await callback.message.answer("🏁 Buyurtma yakunlandi.")
     await callback.answer()
 
@@ -255,14 +250,14 @@ async def reports(msg: Message):
 # 🆕 Reset
 @router.message(Command("reset_hisobot"))
 async def reset_reports(msg: Message):
-    global order_history, active_orders, pending_order
+    global order_history, active_orders, pending_orders
     if msg.from_user.id != SUPER_ADMIN_ID:
         await msg.answer("❌ Sizda huquq yo‘q!")
         return
 
     order_history = []
     active_orders = {}
-    pending_order = None
+    pending_orders = []
     await msg.answer("✅ Hisobotlar 0 dan boshlandi!")
 
 # 📤 Excel eksport
@@ -305,6 +300,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-
-
