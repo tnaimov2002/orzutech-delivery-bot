@@ -42,7 +42,9 @@ ADMINS = [
     851275384, # 10-admin 
     50709839, # 11-admin 
     80594222, # 12-admin 
-    2034173364, # 13-admin (To‘lqinjon Naimov) 
+    5101023649, # 13-admin
+    335509024, # 14-admin
+    2034173364, # 15-admin (To‘lqinjon Naimov) 
 ]
 
 # Admin ismlari
@@ -59,6 +61,8 @@ ADMIN_NAMES = {
     851275384: "Nuritdinov Rustambek",
     50709839: "Akramov Shakhob",
     80594222: "Sobirov Umarbek",
+    5101023649: "Sabirov Sharif",
+    335509024: "Aripov Rajab",
     2034173364: "To'lqinjon Naimov",
 }
 
@@ -300,3 +304,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
