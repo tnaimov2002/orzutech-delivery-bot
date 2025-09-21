@@ -300,8 +300,14 @@ async def main():
         token=BOT_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
+
+    # ❗ Webhookni o‘chirib tashlash
+    await bot.delete_webhook(drop_pending_updates=True)
+
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
