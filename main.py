@@ -69,7 +69,7 @@ ADMIN_NAMES = {
 # 🚚 Kuryerlar
 COURIERS = {
     "Abdunazarov Akmaljon": 6393157349,
-    "Mansur Maxmudov": 5277699739,
+    "Азиз Файзуллаев": 7635875293,
     "Tulqinjon Naimov": 7084948337,
 }
 
@@ -309,5 +309,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
