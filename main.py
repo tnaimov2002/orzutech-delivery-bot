@@ -44,6 +44,7 @@ ADMINS = [
     80594222, # 12-admin 
     5101023649, # 13-admin
     335509024, # 14-admin
+    7944634580, # 14-admin
     2034173364, # 15-admin (To‘lqinjon Naimov) 
 ]
 
@@ -309,6 +310,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
 
