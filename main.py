@@ -112,6 +112,15 @@ async def courier_auth(msg: Message):
             await msg.answer("❗ Buyurtma matni bo'sh bo'lmasligi kerak.")
             return
 
+                # ✅ Agar barcha kuryerlar band bo‘lsa
+        all_couriers_busy = all(cid in active_orders and active_orders[cid] for cid in COURIERS.values())
+        if all_couriers_busy:
+            await msg.answer("🚫 Hozirda barcha kuryerlar band.\n"
+                             "Sizning buyurtmangizni bo‘shagan kuryer bo‘shaganda qabul qiladi.")
+            # Buyurtmani baribir pending_orders ro‘yxatiga qo‘shamiz
+            pending_orders.append((msg.from_user.id, order_text))
+            return
+
         pending_orders.append((msg.from_user.id, order_text))
         await msg.answer("✅ Buyurtma yaratildi!")
 
@@ -215,6 +224,28 @@ async def finish_order(callback: CallbackQuery):
             )
             break
 
+        # ✅ Buyurtmani yaratgan adminni topamiz va unga xabar yuboramiz
+    admin_id = None
+    for a_id, order in pending_orders:
+        if order == order_text:
+            admin_id = a_id
+            break
+    if not admin_id:
+        for (name, order, start, end) in order_history:
+            if name == courier_name and order == order_text:
+                for possible_admin in ADMINS:
+                    try:
+                        await callback.bot.send_message(
+                            possible_admin,
+                            f"📦 Siz yaratgan buyurtma yakunlandi!\n"
+                            f"👤 Kuryer: {courier_name}\n"
+                            f"🕒 Tugallangan: {datetime.now(uzb_tz).strftime('%Y-%m-%d %H:%M:%S')}"
+                        )
+                        break
+                    except Exception:
+                        continue
+                break
+
     await callback.message.answer("🏁 Buyurtma yakunlandi.")
     await callback.answer()
 
@@ -310,6 +341,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
 
