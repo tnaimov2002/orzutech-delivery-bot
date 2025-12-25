@@ -21,7 +21,7 @@ except Exception:
 
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = "8225995763:AAECJLO4W6Mv_Z7Kb5jY6hDmYOJKgBqQzZo"
+BOT_TOKEN = "8225995763:AAG7rRptYFDMcY-U8D_cB5FO9-vW7oQBHOM"
 SUPER_ADMIN_ID = 2034173364
 
 ADMINS = [
@@ -206,3 +206,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
